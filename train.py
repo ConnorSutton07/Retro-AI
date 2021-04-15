@@ -3,7 +3,9 @@ from agent import DQNAgent
 from environment import make_env
 from tqdm import tqdm
 import torch
-
+import matplotlib.pyplot as plt
+import pickle
+import numpy as np
 
 def run(training_mode, num_episodes: int, pretrained: bool):
     env = gym_super_mario_bros.make('SuperMarioBros-1-1-v0')
@@ -22,8 +24,7 @@ def run(training_mode, num_episodes: int, pretrained: bool):
         exploration_min = 0.02,
         exploration_decay = 0.99,
         double_dq = True,
-        pretrained = pretrained
-        )
+        pretrained = pretrained)
 
     env.reset()
     total_rewards = []
@@ -36,21 +37,26 @@ def run(training_mode, num_episodes: int, pretrained: bool):
         terminal = False
         while not terminal:
             if not training_mode:
-                show_state(env, ep_num)
+                #show_state(env, ep_num)
+                env.render()
             action = agent.act(state)
             steps += 1
 
             state_next, reward, terminal, info = env.step(int(action[0]))
             total_reward += reward
-            state_next = torch.tensor([state_next])
+            state_next = torch.Tensor([state_next])
             reward = torch.tensor([reward]).unsqueeze(0)
             terminal = torch.tensor([int(terminal)]).unsqueeze(0)
 
             if training_mode:
                 agent.remember(state, action, reward, state_next, terminal)
                 agent.experience_replay()
+
+            state = state_next
             
         total_rewards.append(total_reward)
+        print("Total reward after episode {} is {}".format(ep_num + 1, total_rewards[-1]))
+        num_episodes += 1      
 
     if training_mode:
         with open("ending_position.pkl", "wb") as f:
@@ -63,11 +69,12 @@ def run(training_mode, num_episodes: int, pretrained: bool):
             torch.save(agent.local_net.state_dict(), "dq1.pt")
             torch.save(agent.target_net.state_dict(), "dq2.pt")
         else:
-            torch.save(agent.STATE_MEM,  "STATE_MEM.pt")
-            torch.save(agent.ACTION_MEM, "ACTION_MEM.pt")
-            torch.save(agent.REWARD_MEM, "REWARD_MEM.pt")
-            torch.save(agent.STATE2_MEM, "STATE2_MEM.pt")
-            torch.save(agent.DONE_MEM,   "DONE_MEM.pt")
+            torch.save(agent.dqn.state_dict(), "dq.pt")  
+        torch.save(agent.STATE_MEM,  "STATE_MEM.pt")
+        torch.save(agent.ACTION_MEM, "ACTION_MEM.pt")
+        torch.save(agent.REWARD_MEM, "REWARD_MEM.pt")
+        torch.save(agent.STATE2_MEM, "STATE2_MEM.pt")
+        torch.save(agent.DONE_MEM,   "DONE_MEM.pt")
     
     env.close()  
 
