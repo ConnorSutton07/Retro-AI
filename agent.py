@@ -25,6 +25,7 @@ class DQNAgent:
         self.action_space = action_space
         self.double_dq = double_dq
         self.pretrained = pretrained
+        print(self.pretrained)
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         if self.double_dq:  
             self.local_net = DQNSolver(state_space, action_space).to(self.device)
@@ -33,6 +34,7 @@ class DQNAgent:
             if self.pretrained:
                 self.local_net.load_state_dict(torch.load("dq1.pt", map_location=torch.device(self.device)))
                 self.target_net.load_state_dict(torch.load("dq2.pt", map_location=torch.device(self.device)))
+                print('here')
                     
             self.optimizer = torch.optim.Adam(self.local_net.parameters(), lr=learning_rate)
             self.copy = 5000  # Copy the local model weights into the target network every 5000 steps
@@ -72,6 +74,8 @@ class DQNAgent:
         self.l1 = nn.SmoothL1Loss().to(self.device) # Also known as Huber loss
         self.exploration_max = exploration_max
         self.exploration_rate = exploration_max
+        if self.pretrained:
+            self.exploration_rate = 0.05
         self.exploration_min = exploration_min
         self.exploration_decay = exploration_decay
 
