@@ -1,10 +1,19 @@
 import sys
+import os 
 from core import ui
 from core import settings
 from core import train
 
 class Driver:
     def __init__(self) -> None:
+
+        self.paths = {}
+        self.paths["current"] = os.getcwd()
+        self.paths["data"] = os.path.join(self.paths["current"], "data")
+        self.paths["trained"] = os.path.join(self.paths["data"], "trained")
+        self.paths["deepQ"] = os.path.join(self.paths["trained"], "deepQ")
+        
+
         print()
         print("     +" + "-"*8 + "+")
         print("      RETRO AI")
@@ -32,7 +41,7 @@ class Driver:
         sys.exit()
 
     def _runNew(self) -> None:
-        
+
 
 
     
