@@ -10,7 +10,8 @@ import numpy as np
 
 
 def run(training_mode: bool, 
-        pretrained: bool, 
+        pretrained: bool,
+        session_path: str, 
         session_name: str,
         num_episodes: int,
         game: str = 'SuperMarioBros-2-1-v0' 
