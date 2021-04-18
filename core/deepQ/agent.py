@@ -1,4 +1,4 @@
-from solver import DQNSolver
+from core.deepQ.solver import DQNSolver
 import torch 
 import torch.nn as nn
 import pickle
@@ -18,10 +18,11 @@ class DQNAgent:
                  exploration_max: float, 
                  exploration_min: float, 
                  exploration_decay: float,
-                 load_path: str = None,
-                 load_path: str = None, 
                  double_dq: bool = True, 
-                 pretrained: bool = False):
+                 pretrained: bool = False,
+                 load_path: str = None,
+                 save_path: str = None
+                 ) -> None:
 
         # Define DQN Layers
         self.state_space = state_space
@@ -36,9 +37,8 @@ class DQNAgent:
             self.target_net = DQNSolver(state_space, action_space).to(self.device)
             
             if self.pretrained:
-                self.local_net.load_state_dict(torch.load("dq1.pt", map_location=torch.device(self.device)))
-                self.target_net.load_state_dict(torch.load("dq2.pt", map_location=torch.device(self.device)))
-                print('here')
+                self.local_net.load_state_dict(torch.load(os.path.join(self.load_path, "dq1.pt"), map_location=torch.device(self.device)))
+                self.target_net.load_state_dict(torch.load(os.path.join(self.load_path, "dq2.pt"), map_location=torch.device(self.device)))
                     
             self.optimizer = torch.optim.Adam(self.local_net.parameters(), lr=learning_rate)
             self.copy = 5000  # Copy the local model weights into the target network every 5000 steps
@@ -47,7 +47,7 @@ class DQNAgent:
             self.dqn = DQNSolver(state_space, action_space).to(self.device)
             
             if self.pretrained:
-                self.dqn.load_state_dict(torch.load("dq.pt", map_location=torch.device(self.device)))
+                self.dqn.load_state_dict(torch.load(os.path.join(self.load_path, "dq.pt"), map_location=torch.device(self.device)))
             self.optimizer = torch.optim.Adam(self.dqn.parameters(), lr=learning_rate)
 
         # Create memory
