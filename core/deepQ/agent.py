@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import pickle
 import random
+import os
 
 class DQNAgent:
 
@@ -16,7 +17,9 @@ class DQNAgent:
                  dropout: float, 
                  exploration_max: float, 
                  exploration_min: float, 
-                 exploration_decay: float, 
+                 exploration_decay: float,
+                 load_path: str = None,
+                 load_path: str = None, 
                  double_dq: bool = True, 
                  pretrained: bool = False):
 
@@ -25,7 +28,8 @@ class DQNAgent:
         self.action_space = action_space
         self.double_dq = double_dq
         self.pretrained = pretrained
-        print(self.pretrained)
+        self.load_path = load_path
+    
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         if self.double_dq:  
             self.local_net = DQNSolver(state_space, action_space).to(self.device)
@@ -49,14 +53,14 @@ class DQNAgent:
         # Create memory
         self.max_memory_size = max_memory_size
         if self.pretrained:
-            self.STATE_MEM = torch.load("STATE_MEM.pt")
-            self.ACTION_MEM = torch.load("ACTION_MEM.pt")
-            self.REWARD_MEM = torch.load("REWARD_MEM.pt")
-            self.STATE2_MEM = torch.load("STATE2_MEM.pt")
-            self.DONE_MEM = torch.load("DONE_MEM.pt")
-            with open("ending_position.pkl", 'rb') as f:
+            self.STATE_MEM = torch.load(os.path.join(load_path, "STATE_MEM.pt"))
+            self.ACTION_MEM = torch.load(os.path.join(load_path, "ACTION_MEM.pt"))
+            self.REWARD_MEM = torch.load(os.path.join(load_path, "REWARD_MEM.pt"))
+            self.STATE2_MEM = torch.load(os.path.join(load_path, "STATE2_MEM.pt"))
+            self.DONE_MEM = torch.load(os.path.join(load_path, "DONE_MEM.pt"))
+            with open(os.path.join(load_path, "ending_position.pkl"), 'rb') as f:
                 self.ending_position = pickle.load(f)
-            with open("num_in_queue.pkl", 'rb') as f:
+            with open(os.path.join(load_path, "num_in_queue.pkl"), 'rb') as f:
                 self.num_in_queue = pickle.load(f)
         else:
             self.STATE_MEM = torch.zeros(max_memory_size, *self.state_space)
@@ -156,3 +160,22 @@ class DQNAgent:
         
         # Makes sure that exploration rate is always at least 'exploration min'
         self.exploration_rate = max(self.exploration_rate, self.exploration_min)
+
+    def save(self) -> None:
+
+        with open(os.path.join(self.save_path, "ending_position.pkl"), "wb") as f:
+            pickle.dump(agent.ending_position, f)
+        with open(os.path.join(self.save_path, "num_in_queue.pkl"), "wb") as f:
+            pickle.dump(agent.num_in_queue, f)
+        with open(os.path.join(self.save_path, "total_rewards.pkl"), "wb") as f:
+            pickle.dump(total_rewards, f)
+        if agent.double_dq:
+            torch.save(agent.local_net.state_dict(), os.path.join(self.save_path, "dq1.pt"))
+            torch.save(agent.target_net.state_dict(), os.path.join(self.save_path, "dq2.pt"))
+        else:
+            torch.save(agent.dqn.state_dict(), os.path.join(self.save_path, "dq.pt"))
+        torch.save(agent.STATE_MEM, os.path.join(self.save_path, "STATE_MEM.pt"))
+        torch.save(agent.ACTION_MEM, os.path.join(self.save_path, "ACTION_MEM.pt"))
+        torch.save(agent.REWARD_MEM, os.path.join(self.save_path, "REWARD_MEM.pt"))
+        torch.save(agent.STATE2_MEM, os.path.join(self.save_path, "STATE2_MEM.pt"))
+        torch.save(agent.DONE_MEM, os.path.join(self.save_path, "DONE_MEM.pt"))
