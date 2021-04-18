@@ -1,5 +1,5 @@
 import gym_super_mario_bros
-from core.agent import DQNAgent
+from core.deepQ.agent import DQNAgent
 from core.environment import make_env
 from core.config import * 
 from tqdm import tqdm
@@ -7,20 +7,23 @@ import torch
 import matplotlib.pyplot as plt
 import pickle
 import numpy as np
-
+#import keyboard
 
 def run(training_mode: bool, 
         pretrained: bool,
-        session_path: str, 
-        session_name: str,
         num_episodes: int,
-        game: str = 'SuperMarioBros-2-1-v0' 
+        session_name: str,
+        load_path: str = None,
+        game: str = 'SuperMarioBros-1-1-v0' 
         ) -> None:
 
+    print("Creating environment...")
     env = gym_super_mario_bros.make(game)
     env = make_env(env)
     observation_space = env.observation_space.shape
     action_space = env.action_space.n 
+
+    print("Initializing agent...")
     agent = DQNAgent(
         state_space = observation_space,
         action_space = action_space,
@@ -33,11 +36,14 @@ def run(training_mode: bool,
         exploration_min = EXPLORATION_MIN,
         exploration_decay = EXPLORATION_DECAY,
         double_dq = True,
-        pretrained = pretrained)
+        pretrained = pretrained,
+        load_path = load_path,
+        save_path=session_name)
 
     env.reset()
     total_rewards = []
 
+    print("Starting...")
     for ep_num in tqdm(range(num_episodes)):
         state = env.reset()
         state = torch.Tensor([state])
@@ -68,22 +74,7 @@ def run(training_mode: bool,
         num_episodes += 1      
 
     if training_mode:
-        with open("ending_position.pkl", "wb") as f:
-            pickle.dump(agent.ending_position, f)
-        with open("num_in_queue.pkl", "wb") as f:
-            pickle.dump(agent.num_in_queue, f)
-        with open("total_rewards.pkl", "wb") as f:
-            pickle.dump(total_rewards, f)
-        if agent.double_dq:
-            torch.save(agent.local_net.state_dict(), "dq1.pt")
-            torch.save(agent.target_net.state_dict(), "dq2.pt")
-        else:
-            torch.save(agent.dqn.state_dict(), "dq.pt")  
-        torch.save(agent.STATE_MEM,  "STATE_MEM.pt")
-        torch.save(agent.ACTION_MEM, "ACTION_MEM.pt")
-        torch.save(agent.REWARD_MEM, "REWARD_MEM.pt")
-        torch.save(agent.STATE2_MEM, "STATE2_MEM.pt")
-        torch.save(agent.DONE_MEM,   "DONE_MEM.pt")
+        agent.save()
     
     env.close()  
 
