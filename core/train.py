@@ -12,7 +12,7 @@ import numpy as np
 def run(training_mode: bool, 
         pretrained: bool,
         num_episodes: int,
-        session_name: str,
+        save_path: str,
         load_path: str = None,
         game: str = 'SuperMarioBros-1-1-v0' 
         ) -> None:
@@ -27,6 +27,7 @@ def run(training_mode: bool,
     agent = DQNAgent(
         state_space = observation_space,
         action_space = action_space,
+        pretrained = pretrained,
         max_memory_size = MAX_MEMORY_SIZE,
         batch_size = BATCH_SIZE,
         gamma = GAMMA,
@@ -36,9 +37,8 @@ def run(training_mode: bool,
         exploration_min = EXPLORATION_MIN,
         exploration_decay = EXPLORATION_DECAY,
         double_dq = True,
-        pretrained = pretrained,
         load_path = load_path,
-        save_path=session_name)
+        save_path = save_path)
 
     env.reset()
     total_rewards = []
@@ -49,16 +49,22 @@ def run(training_mode: bool,
         state = torch.Tensor([state])
         total_reward = 0
         steps = 0
+        counter = 0
         terminal = False
+        prev_reward = 0
         while not terminal:
             if not training_mode:
-                #show_state(env, ep_num)
                 env.render()
             action = agent.act(state)
             steps += 1
 
             state_next, reward, terminal, info = env.step(int(action[0]))
             total_reward += reward
+
+            counter = counter + 1 if prev_reward >= total_reward else 0
+            if counter > 200:
+                terminal = True
+
             state_next = torch.Tensor([state_next])
             reward = torch.tensor([reward]).unsqueeze(0)
             terminal = torch.tensor([int(terminal)]).unsqueeze(0)
@@ -67,6 +73,7 @@ def run(training_mode: bool,
                 agent.remember(state, action, reward, state_next, terminal)
                 agent.experience_replay()
 
+            prev_reward = total_reward
             state = state_next
             
         total_rewards.append(total_reward)
@@ -74,7 +81,8 @@ def run(training_mode: bool,
         num_episodes += 1      
 
     if training_mode:
-        agent.save()
+        print("Saving model...")
+        agent.save(total_rewards)
     
     env.close()  
 
