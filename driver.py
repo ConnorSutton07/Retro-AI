@@ -8,8 +8,7 @@ class Driver:
 
         self.paths = {}
         self.paths["current"] = os.getcwd()
-        self.paths["data"] = os.path.join(self.paths["current"], "data")
-        self.paths["trained"] = os.path.join(self.paths["data"], "trained")
+        self.paths["models"] = os.path.join(self.paths["current"], "models")
         
 
         print()
@@ -36,11 +35,14 @@ class Driver:
 
     def _runPretrained(self) -> None:
         modelPath = self.getPretrainedModel()
+        session_name = input("Name for session: ")
+        num_episodes = input("Number of training episodes: ")
+        session_path = os.path.join(self.paths["models"], session_name)
         if modelPath != None:
             train.run(training_mode=True,
                         pretrained=True,
                         num_episodes=500,
-                        session_name="test",
+                        save_path=num_episodes,
                         load_path=modelPath)
 
     def _viewPretrained(self) -> None:
@@ -49,11 +51,11 @@ class Driver:
             train.run(training_mode=False,
                         pretrained=True,
                         num_episodes=500,
-                        session_name="test",
+                        save_path=None,
                         load_path=modelPath)
 
     def getPretrainedModel(self) -> str:
-        models = os.listdir(self.paths["trained"])
+        models = os.listdir(self.paths["models"])
         num_models = len(models)
         
         if num_models == 0:
@@ -68,12 +70,19 @@ class Driver:
             index = ui.getValidInput(msg, dtype=int, valid=range(1, num_models+2)) - 1
 
             if (index != backIndex - 1):
-                return os.path.join(self.paths["trained"], models[index])
+                return os.path.join(self.paths["models"], models[index])
 
         return None
         
     def _runNew(self) -> None:
-        pass
+        session_name = input("Name for session: ")
+        num_episodes = input("Number of training episodes: ")
+        session_path = os.path.join(self.paths["models"], session_name)
+        os.mkdir(session_path)
+        train.run(training_mode = True,
+                  pretrained = False,
+                  num_episodes = int(num_episodes),
+                  save_path = session_path)
 
 
     
