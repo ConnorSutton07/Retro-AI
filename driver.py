@@ -2,6 +2,8 @@ import sys
 import os 
 from core import ui
 from core import train
+from retro.scripts.import_path import main as import_roms
+from retro.data.__init__ import list_games
 
 class Driver:
     def __init__(self) -> None:
@@ -9,6 +11,7 @@ class Driver:
         self.paths = {}
         self.paths["current"] = os.getcwd()
         self.paths["models"] = os.path.join(self.paths["current"], "models")
+        self.paths["ROMs"] = os.path.join(self.paths["current"], "ROMs")
         
 
         print()
@@ -20,14 +23,15 @@ class Driver:
     def run(self) -> None:
         modes = [
             ("Train AI", self._trainAI),
-            ("Watch AI", self._viewPretrained, False),
+            ("Watch AI", self._viewPretrained),
+            ("Import ROMs", self.importROMs),
             ("Exit", lambda: sys.exit())
         ]
         ui.runModes(modes)
 
     def _trainAI(self) -> None:
         modes = [
-            ("Pretrained", self._runPretrained, True),
+            ("Pretrained", self._runPretrained),
             ("New", self._runNew),
             ("Back", self.run)
         ]
@@ -42,7 +46,7 @@ class Driver:
             train.run(training_mode=True,
                         pretrained=True,
                         num_episodes=500,
-                        save_path=num_episodes,
+                        save_path=session_path,
                         load_path=modelPath)
 
     def _viewPretrained(self) -> None:
@@ -83,6 +87,11 @@ class Driver:
                   pretrained = False,
                   num_episodes = int(num_episodes),
                   save_path = session_path)
+
+    def importROMs(self) -> None:
+        print("Checking ROMs directory...")
+        import_roms(self.paths["ROMs"])
+
 
 
     
