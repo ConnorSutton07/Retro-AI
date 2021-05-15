@@ -45,7 +45,7 @@ class Driver:
         if modelPath != None:
             train.run(training_mode=True,
                         pretrained=True,
-                        num_episodes=500,
+                        num_episodes=num_episodes,
                         save_path=session_path,
                         load_path=modelPath)
 

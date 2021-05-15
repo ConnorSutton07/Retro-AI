@@ -7,6 +7,7 @@ import torch
 import matplotlib.pyplot as plt
 import pickle
 import numpy as np
+import retro
 #import keyboard
 
 def run(training_mode: bool, 
@@ -18,7 +19,8 @@ def run(training_mode: bool,
         ) -> None:
 
     print("Creating environment...")
-    env = gym_super_mario_bros.make(game)
+    #env = gym_super_mario_bros.make(game)
+    env = retro.make('SuperMarioBros-Nes', state='Level1-1')
     env = make_env(env)
     observation_space = env.observation_space.shape
     action_space = env.action_space.n 
@@ -53,11 +55,10 @@ def run(training_mode: bool,
         terminal = False
         prev_reward = 0
         while not terminal:
-            if not training_mode:
-                env.render()
+            #if not training_mode:
+            env.render()
             action = agent.act(state)
             steps += 1
-
             state_next, reward, terminal, info = env.step(int(action[0]))
             total_reward += reward
 

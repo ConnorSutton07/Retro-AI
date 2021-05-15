@@ -2,7 +2,7 @@ import gym
 import numpy as np 
 import cv2
 from nes_py.wrappers import JoypadSpace
-from gym_super_mario_bros.actions import RIGHT_ONLY
+#from gym_super_mario_bros.actions import RIGHT_ONLY
 import collections 
 
 class MaxAndSkipEnv(gym.Wrapper):
@@ -49,8 +49,11 @@ class ProcessFrame84(gym.ObservationWrapper):
 
     @staticmethod
     def process(frame):
+        print(frame.size)
         if frame.size == 240 * 256 * 3:
             img = np.reshape(frame, [240, 256, 3]).astype(np.float32)
+        elif frame.size == 224 * 240 * 3:
+            img = np.reshape(frame, [224, 240, 3]).astype(np.float32)
         else:
             assert False, "Unknown resolution."
         img = img[:, :, 0] * 0.299 + img[:, :, 1] * 0.587 + img[:, :, 2] * 0.114
@@ -94,6 +97,38 @@ class BufferWrapper(gym.ObservationWrapper):
         self.buffer[-1] = observation
         return self.buffer
 
+class Discretizer(gym.ActionWrapper):
+    """ Wraps environment and makes it use discrete actions """
+    def __init__(self, env):
+        super(ContraDiscretizer, self).__init__(env)
+        # SNES keys
+        buttons = ["B", "Y", "SELECT", "START", "UP", "DOWN", "LEFT", "RIGHT", "A", "X", "L", "R"]
+        actions = [['Y'], ['UP'], ['RIGHT'], ['DOWN'], ['A'],
+                   ['Y', 'LEFT'], ['Y', 'RIGHT'], ['Y', 'X'], ['Y', 'UP'], ['Y', 'DOWN'],
+                   ['Y', 'B', 'LEFT'], ['Y', 'B', 'RIGHT'], ['Y', 'UP', 'RIGHT'], ['Y', 'DOWN', 'RIGHT'],
+                   ['Y', 'DOWN', 'B'], ['Y', 'UP', 'LEFT'], ['Y', 'DOWN', 'LEFT']
+                   ] #
+                    #['Y', 'R', 'UP', 'LEFT'], ['Y', 'R', 'UP', 'RIGHT'], ['Y', 'R', 'DOWN', 'LEFT'], ['Y', 'R', 'DOWN', 'RIGHT']
+                    #['Y', 'L', 'R', 'RIGHT'], ['Y', 'L', 'R', 'LEFT'],  ['Y', 'UP', 'LEFT'], ['Y', 'DOWN', 'LEFT'], ['A'],
+        #23 actions, more than I would like but certain ones needed at specific moments
+        self._actions = []
+        for action in actions:
+            arr = np.array([False] * 12)
+            if action == ['NOOP']:
+                self._actions.append(arr)
+                continue
+            for button in action:
+                arr[buttons.index(button)] = True
+            self._actions.append(arr)
+        self.action_space = gym.spaces.Discrete(len(self._actions))
+
+RIGHT_ONLY = [
+    ['NOOP'],
+    ['right'],
+    ['right', 'A'],
+    ['right', 'B'],
+    ['right', 'A', 'B'],
+]
 
 def make_env(env):
     env = MaxAndSkipEnv(env)
