@@ -49,11 +49,8 @@ class ProcessFrame84(gym.ObservationWrapper):
 
     @staticmethod
     def process(frame):
-        print(frame.size)
-        if frame.size == 240 * 256 * 3:
-            img = np.reshape(frame, [240, 256, 3]).astype(np.float32)
-        elif frame.size == 224 * 240 * 3:
-            img = np.reshape(frame, [224, 240, 3]).astype(np.float32)
+        if frame.size == 256 * 224 * 3:
+            img = np.reshape(frame, [256, 224, 3]).astype(np.float32)
         else:
             assert False, "Unknown resolution."
         img = img[:, :, 0] * 0.299 + img[:, :, 1] * 0.587 + img[:, :, 2] * 0.114
@@ -97,23 +94,23 @@ class BufferWrapper(gym.ObservationWrapper):
         self.buffer[-1] = observation
         return self.buffer
 
-class Discretizer(gym.ActionWrapper):
-    """ Wraps environment and makes it use discrete actions """
+class SNESDiscretizer(gym.ActionWrapper):
+    """
+    Wrap a gym-retro environment and make it use discrete
+    actions for the Sonic game.
+    """
     def __init__(self, env):
-        super(ContraDiscretizer, self).__init__(env)
-        # SNES keys
+        super(SNESDiscretizer, self).__init__(env)
+        self.num_buttons = 12
+
         buttons = ["B", "Y", "SELECT", "START", "UP", "DOWN", "LEFT", "RIGHT", "A", "X", "L", "R"]
-        actions = [['Y'], ['UP'], ['RIGHT'], ['DOWN'], ['A'],
-                   ['Y', 'LEFT'], ['Y', 'RIGHT'], ['Y', 'X'], ['Y', 'UP'], ['Y', 'DOWN'],
-                   ['Y', 'B', 'LEFT'], ['Y', 'B', 'RIGHT'], ['Y', 'UP', 'RIGHT'], ['Y', 'DOWN', 'RIGHT'],
-                   ['Y', 'DOWN', 'B'], ['Y', 'UP', 'LEFT'], ['Y', 'DOWN', 'LEFT']
-                   ] #
-                    #['Y', 'R', 'UP', 'LEFT'], ['Y', 'R', 'UP', 'RIGHT'], ['Y', 'R', 'DOWN', 'LEFT'], ['Y', 'R', 'DOWN', 'RIGHT']
-                    #['Y', 'L', 'R', 'RIGHT'], ['Y', 'L', 'R', 'LEFT'],  ['Y', 'UP', 'LEFT'], ['Y', 'DOWN', 'LEFT'], ['A'],
-        #23 actions, more than I would like but certain ones needed at specific moments
+        actions = [['Y'], ['UP'], ['RIGHT'], ['DOWN'], ['A'], ["B"],
+                   ["B", "RIGHT"], ["B", "UP"], ['Y', 'LEFT'], ['Y', 'RIGHT'], ['Y', 'B'],
+                   ['Y', 'B', 'LEFT'], ['Y', 'B', 'RIGHT']
+                   ] 
         self._actions = []
         for action in actions:
-            arr = np.array([False] * 12)
+            arr = np.array([False] * self.num_buttons)
             if action == ['NOOP']:
                 self._actions.append(arr)
                 continue
@@ -122,13 +119,59 @@ class Discretizer(gym.ActionWrapper):
             self._actions.append(arr)
         self.action_space = gym.spaces.Discrete(len(self._actions))
 
-RIGHT_ONLY = [
-    ['NOOP'],
-    ['right'],
-    ['right', 'A'],
-    ['right', 'B'],
-    ['right', 'A', 'B'],
-]
+    def action(self, a): # pylint: disable=W0221
+        return self._actions[a].copy()
+
+    # @property
+    # def RIGHT_ONLY(self):
+    #     self.RIGHT_ONLY = [
+    #         ['NOOP'],
+    #         ['right'],
+    #         ['right', 'A'],
+    #         ['right', 'B'],
+    #         ['right', 'A', 'B'],
+    #     ]
+
+    # @property
+    # def SIMPLE_MOVEMENT(self):
+    #     self.SIMPLE_MOVEMENT = [
+    #         ['NOOP'],
+    #         ['right'],
+    #         ['right', 'A'],
+    #         ['right', 'B'],
+    #         ['right', 'A', 'B'],
+    #         ['A'],
+    #         ['left'],
+    #     ]
+
+    # @property
+    # def COMPLEX_MOVEMENT(self):
+    #     self.COMPLEX_MOVEMENT = [
+    #         ['NOOP'],
+    #         ['right'],
+    #         ['right', 'A'],
+    #         ['right', 'B'],
+    #         ['right', 'A', 'B'],
+    #         ['A'],
+    #         ['left'],
+    #         ['left', 'A'],
+    #         ['left', 'B'],
+    #         ['left', 'A', 'B'],
+    #         ['down'],
+    #         ['up'],
+    #     ]
+    
+
+    # def action(self, a): # pylint: disable=W0221
+    #     return self._actions[a].copy()
+
+# RIGHT_ONLY = [
+#     ['NOOP'],
+#     ['right'],
+#     ['right', 'A'],
+#     ['right', 'B'],
+#     ['right', 'A', 'B'],
+# ]
 
 def make_env(env):
     env = MaxAndSkipEnv(env)
@@ -136,4 +179,6 @@ def make_env(env):
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, 4)
     env = ScaledFloatFrame(env)
-    return JoypadSpace(env, RIGHT_ONLY)
+    env = SNESDiscretizer(env)
+    return env
+    #return JoypadSpace(env, RIGHT_ONLY)
