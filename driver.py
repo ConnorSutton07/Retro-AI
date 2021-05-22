@@ -42,10 +42,11 @@ class Driver:
         session_name = input("Name for session: ")
         num_episodes = input("Number of training episodes: ")
         session_path = os.path.join(self.paths["models"], session_name)
+        os.mkdir(session_path)
         if modelPath != None:
             train.run(training_mode=True,
                         pretrained=True,
-                        num_episodes=num_episodes,
+                        num_episodes=int(num_episodes),
                         save_path=session_path,
                         load_path=modelPath)
 
