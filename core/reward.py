@@ -1,5 +1,11 @@
 
 def SMW_Reward(info: dict, prev_info: dict) -> int:
+    """
+    Simple reward function designed for Super Mario World (SNES)
+    Returns a reward value based on distance, score, death,
+    and completing the level
+
+    """
     if not prev_info is None:
         score = info['score'] - prev_info['score']
         xPos = info['x'] - prev_info['x']
@@ -25,6 +31,21 @@ def SMW_Reward(info: dict, prev_info: dict) -> int:
     else:
         return 0, False
 
-rewards = {
-    'SuperMarioWorld-Snes' : SMW_Reward
+
+def DKC_Reward(info: dict, prev_info: dict) -> int:
+    if not prev_info is None:
+        score = info['score'] - prev_info['score']
+        dead = info['lives'] < prev_info['lives']
+        reward = score + (-100 * dead)
+        return reward, dead
+    else:
+        return 0, False
+
+def default_reward_function(info: dict, prev_info: dict, reward: int) -> int:
+    return reward, false
+
+
+Rewards = {
+    'SuperMarioWorld-Snes' : SMW_Reward,
+    'DonkeyKongCountry-Snes' : DKC_Reward
 }
