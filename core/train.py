@@ -2,7 +2,7 @@ import gym_super_mario_bros
 from core.deepQ.agent import DQNAgent
 from core.environment import make_env
 from core.config import * 
-from core.reward import rewards
+from core.reward import Rewards, default_reward_function
 from tqdm import tqdm
 import torch
 import matplotlib.pyplot as plt
@@ -17,16 +17,20 @@ def run(training_mode: bool,
         num_episodes: int,
         save_path: str,
         load_path: str = None,
-        game: str = 'SuperMarioWorld-Snes' 
+        game: str = 'DonkeyKongCountry-Snes' 
         ) -> None:
 
     print("Creating environment...")
     #env = gym_super_mario_bros.make(game)
-    env = retro.make(game, state='YoshiIsland1')
+    env = retro.make(game, state='1Player.CongoJungle.JungleHijinks.Level1')
     env = make_env(env)
     observation_space = env.observation_space.shape
     action_space = env.action_space.n
-    reward_function = rewards[game] 
+
+    try: # use custom reward function if defined
+        reward_function = Rewards[game]
+    except:
+        reward_function = Reward.default_reward_function
 
     print("Initializing agent...")
     agent = DQNAgent(
@@ -61,8 +65,8 @@ def run(training_mode: bool,
         prev_reward = 0
         prev_info = None
         while not terminal:
-            if not training_mode:
-                env.render()
+            #if not training_mode:
+            env.render()
 
             action = agent.act(state)
             steps += 1
