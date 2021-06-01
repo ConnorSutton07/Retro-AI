@@ -1,4 +1,4 @@
-import gym_super_mario_bros
+#import gym_super_mario_bros
 from core.deepQ.agent import DQNAgent
 from core.environment import make_env
 from core.config import * 

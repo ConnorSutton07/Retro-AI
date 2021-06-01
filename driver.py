@@ -3,7 +3,6 @@ import os
 from core import ui
 from core import train
 from retro.scripts.import_path import main as import_roms
-from retro.data.__init__ import list_games
 
 class Driver:
     def __init__(self) -> None:
@@ -91,7 +90,9 @@ class Driver:
 
     def importROMs(self) -> None:
         print("Checking ROMs directory...")
-        import_roms(self.paths["ROMs"])
+        #import_roms(self.paths["ROMs"])
+        sys.argv = [sys.argv[0], self.paths["ROMs"]]
+        import_roms()
 
 
 
