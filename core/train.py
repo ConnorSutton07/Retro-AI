@@ -11,6 +11,7 @@ import numpy as np
 import retro
 import cv2
 import keyboard
+import sys
 
 def run(training_mode: bool, 
         pretrained: bool,
@@ -22,7 +23,7 @@ def run(training_mode: bool,
 
     print("Creating environment...")
     #env = gym_super_mario_bros.make(game)
-    env = retro.make(game, state='1Player.CongoJungle.JungleHijinks.Level1')
+    env = retro.make(game)#, state='1Player.CongoJungle.JungleHijinks.Level1')
     env = make_env(env)
     observation_space = env.observation_space.shape
     action_space = env.action_space.n
@@ -94,6 +95,7 @@ def run(training_mode: bool,
                 print("Exiting...")
                 force_quit = True
                 iterator.close()
+                sys.exit()
                 break
 
             
