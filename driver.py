@@ -3,6 +3,7 @@ import os
 from core import ui
 from core import train
 from retro.scripts.import_path import main as import_roms
+from retro.data import get_known_hashes, groom_rom
 
 class Driver:
     def __init__(self) -> None:
@@ -37,26 +38,30 @@ class Driver:
         ui.runModes(modes, "Select training option:")
 
     def _runPretrained(self) -> None:
+        game = self.getROM()
         modelPath = self.getPretrainedModel()
         session_name = input("Name for session: ")
         num_episodes = input("Number of training episodes: ")
         session_path = os.path.join(self.paths["models"], session_name)
         os.mkdir(session_path)
         if modelPath != None:
-            train.run(training_mode=True,
+            train.run(game = game,
+                        training_mode=True,
                         pretrained=True,
                         num_episodes=int(num_episodes),
                         save_path=session_path,
                         load_path=modelPath)
 
     def _viewPretrained(self) -> None:
+        game = self.getROM()
         modelPath = self.getPretrainedModel()
         if modelPath != None:
-            train.run(training_mode=False,
-                        pretrained=True,
-                        num_episodes=500,
-                        save_path=None,
-                        load_path=modelPath)
+            train.run(game = game,
+                      training_mode=False,
+                      pretrained=True,
+                      num_episodes=500,
+                      save_path=None,
+                      load_path=modelPath)
 
     def getPretrainedModel(self) -> str:
         models = os.listdir(self.paths["models"])
@@ -79,20 +84,69 @@ class Driver:
         return None
         
     def _runNew(self) -> None:
+        game = self.getROM();
+        print(game)
         session_name = input("Name for session: ")
         num_episodes = input("Number of training episodes: ")
         session_path = os.path.join(self.paths["models"], session_name)
         os.mkdir(session_path)
-        train.run(training_mode = True,
+        train.run(game = game,
+                  training_mode = True,
                   pretrained = False,
                   num_episodes = int(num_episodes),
                   save_path = session_path)
 
     def importROMs(self) -> None:
+        """
+        Uses Gym-Retro's import module which reads
+        the ROM path via command line argument. In 
+        order to use Retro without making alterations,
+        we can save/mutate/restore sys.argv
+
+        """
         print("Checking ROMs directory...")
-        #import_roms(self.paths["ROMs"])
+        old_argv = sys.argv
         sys.argv = [sys.argv[0], self.paths["ROMs"]]
         import_roms()
+        sys.argv = old_argv
+
+    def getROM(self) -> str:
+        """ 
+        Displays all (SNES) ROMs in ROMs directory and
+        allows user to select one. At the moment, only
+        SNES files are supported.
+        Note: This method may display unimported ROMS
+
+        """
+        files = os.listdir(self.paths["ROMs"])
+        snes_games = [file for file in files if ui.hasExtension(file, 'smc') or ui.hasExtension(file, 'sfc')]
+        num_games = len(snes_games)
+        if num_games == 0:
+            print("\n No ROMs found. Make sure any ROMs are in the correct directory. ")
+        else:
+            print()
+            known_hashes = get_known_hashes()
+            games = []
+            msg = "Select game:"
+            for i, rom in enumerate(snes_games, start=1):
+                with open(os.path.join(self.paths["ROMs"], rom), "rb") as f:
+                    _, hash = groom_rom(rom, f)
+                    if hash in known_hashes:
+                        game, _, _ = known_hashes[hash]
+                        games.append(game)
+                        msg += "\n\t" + str(i) + ") " + game
+                #msg += "\n\t" + str(i) + ") " + str(rom)
+            backIndex = num_games + 1
+            msg += "\n\t" + str(backIndex) + ") Back"
+            index = ui.getValidInput(msg, dtype=int, valid=range(1, num_games + 2)) - 1
+
+            if (index != backIndex - 1):
+                return games[index]
+        return None
+        
+        #print(snes_files)
+
+        
 
 
 
