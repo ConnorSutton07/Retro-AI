@@ -10,3 +10,4 @@
 - More RL algorithms (PPO, Curiosity, Neuroevolution, etc.)
 - Race against AI/Multiplayer
 - Add interactive mode
+- Add documentation
