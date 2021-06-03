@@ -1,6 +1,6 @@
 # Retro-AI
-![dk](https://user-images.githubusercontent.com/55513603/120691075-a09b2900-c46b-11eb-8239-898bba950e37.png)
-![mario](https://user-images.githubusercontent.com/55513603/120691081-a133bf80-c46b-11eb-903f-7c84be492985.png)
+![small_mario](https://user-images.githubusercontent.com/55513603/120692158-020fc780-c46d-11eb-8205-cd834f1ece4e.png)
+![small_dk](https://user-images.githubusercontent.com/55513603/120692160-020fc780-c46d-11eb-9d0f-64845703097b.png)
 
 
 
