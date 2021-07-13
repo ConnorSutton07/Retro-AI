@@ -69,7 +69,7 @@ def saveToJSON(data, path, indent=4) -> None:
 	with open(path, "w") as f:
 		json.dump(data, f, indent=indent)
 		
-def runModes(modes, msg: str = "Select training option:"):
+def runModes(modes, msg: str = ""):
 	mode = None
 	modes, callbacks = list(zip(*modes))
 	while mode != "Exit":

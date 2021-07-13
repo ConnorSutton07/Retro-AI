@@ -1,8 +1,6 @@
 import gym
 import numpy as np 
 import cv2
-from nes_py.wrappers import JoypadSpace
-#from gym_super_mario_bros.actions import RIGHT_ONLY
 import collections 
 
 class MaxAndSkipEnv(gym.Wrapper):
@@ -97,7 +95,7 @@ class BufferWrapper(gym.ObservationWrapper):
 class SNESDiscretizer(gym.ActionWrapper):
     """
     Wrap a gym-retro environment and make it use discrete
-    actions for the Sonic game.
+    actions for any SNES game.
     """
     def __init__(self, env):
         super(SNESDiscretizer, self).__init__(env)
@@ -122,57 +120,6 @@ class SNESDiscretizer(gym.ActionWrapper):
     def action(self, a): # pylint: disable=W0221
         return self._actions[a].copy()
 
-    # @property
-    # def RIGHT_ONLY(self):
-    #     self.RIGHT_ONLY = [
-    #         ['NOOP'],
-    #         ['right'],
-    #         ['right', 'A'],
-    #         ['right', 'B'],
-    #         ['right', 'A', 'B'],
-    #     ]
-
-    # @property
-    # def SIMPLE_MOVEMENT(self):
-    #     self.SIMPLE_MOVEMENT = [
-    #         ['NOOP'],
-    #         ['right'],
-    #         ['right', 'A'],
-    #         ['right', 'B'],
-    #         ['right', 'A', 'B'],
-    #         ['A'],
-    #         ['left'],
-    #     ]
-
-    # @property
-    # def COMPLEX_MOVEMENT(self):
-    #     self.COMPLEX_MOVEMENT = [
-    #         ['NOOP'],
-    #         ['right'],
-    #         ['right', 'A'],
-    #         ['right', 'B'],
-    #         ['right', 'A', 'B'],
-    #         ['A'],
-    #         ['left'],
-    #         ['left', 'A'],
-    #         ['left', 'B'],
-    #         ['left', 'A', 'B'],
-    #         ['down'],
-    #         ['up'],
-    #     ]
-    
-
-    # def action(self, a): # pylint: disable=W0221
-    #     return self._actions[a].copy()
-
-# RIGHT_ONLY = [
-#     ['NOOP'],
-#     ['right'],
-#     ['right', 'A'],
-#     ['right', 'B'],
-#     ['right', 'A', 'B'],
-# ]
-
 def make_env(env):
     env = MaxAndSkipEnv(env)
     env = ProcessFrame84(env)
@@ -181,4 +128,3 @@ def make_env(env):
     env = ScaledFloatFrame(env)
     env = SNESDiscretizer(env)
     return env
-    #return JoypadSpace(env, RIGHT_ONLY)

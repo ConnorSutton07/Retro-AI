@@ -12,7 +12,7 @@ class Driver:
         self.paths["current"] = os.getcwd()
         self.paths["models"] = os.path.join(self.paths["current"], "models")
         self.paths["ROMs"] = os.path.join(self.paths["current"], "ROMs")
-        
+        self.algorithms = ["DQN", "PPO"]        
 
         print()
         print("     +" + "-"*8 + "+")
@@ -35,17 +35,35 @@ class Driver:
             ("New", self._runNew),
             ("Back", self.run)
         ]
-        ui.runModes(modes, "Select training option:")
+        ui.runModes(modes, "Mode:")
 
-    def _runPretrained(self) -> None:
+    def _runNew(self) -> None:
         game = self.getROM()
-        modelPath = self.getPretrainedModel()
+        print(game)
+        if game is None: return
+        algorithm    = self.chooseTrainingAlgorithm()
+        if algorithm is None: return
         session_name = input("Name for session: ")
         num_episodes = input("Number of training episodes: ")
         session_path = os.path.join(self.paths["models"], session_name)
         os.mkdir(session_path)
-        if modelPath != None:
-            train.run(game = game,
+        train.run(game = game,
+                  alg = algorithm,
+                  training_mode = True,
+                  pretrained = False,
+                  num_episodes = int(num_episodes),
+                  save_path = session_path)
+
+    def _runPretrained(self) -> None:
+        game = self.getROM()
+        if game is None: return
+        modelPath = self.getPretrainedModel()
+        if modelPath is None: return
+        session_name = input("Name for session: ")
+        num_episodes = input("Number of training episodes: ")
+        session_path = os.path.join(self.paths["models"], session_name)
+        os.mkdir(session_path)
+        train.run(game = game,
                         training_mode=True,
                         pretrained=True,
                         num_episodes=int(num_episodes),
@@ -54,6 +72,7 @@ class Driver:
 
     def _viewPretrained(self) -> None:
         game = self.getROM()
+        if game is None: return
         modelPath = self.getPretrainedModel()
         if modelPath != None:
             train.run(game = game,
@@ -62,6 +81,23 @@ class Driver:
                       num_episodes=500,
                       save_path=None,
                       load_path=modelPath)
+
+    def chooseTrainingAlgorithm(self) -> str:
+        """
+        Allows user to choose which RL algorithm will be used.
+        Options: DQN, PPO
+
+        """
+        num_algorithms = len(self.algorithms)
+        msg = "Select training algorithm:"
+        for i, algorithm in enumerate(self.algorithms, start = 1):
+            msg += "\n    " + str(i) + ") " + algorithm
+        backIndex = num_algorithms + 1
+        msg += "\n    " + str(backIndex) + ") Back"
+        index = ui.getValidInput(msg, dtype=int, valid=range(1, num_algorithms + 2)) - 1
+        if (index != backIndex - 1):
+            return self.algorithms[index]
+        return None
 
     def getPretrainedModel(self) -> str:
         models = os.listdir(self.paths["models"])
@@ -73,28 +109,14 @@ class Driver:
             print()
             msg = "Select model to use:"
             for i, model in enumerate(models, start=1):
-                msg += "\n\t" + str(i) + ") " + str(model)
+                msg += "\n    " + str(i) + ") " + str(model)
             backIndex = num_models + 1
-            msg += "\n\t" + str(backIndex) + ") Back"
-            index = ui.getValidInput(msg, dtype=int, valid=range(1, num_models+2)) - 1
+            msg += "\n    " + str(backIndex) + ") Back"
+            index = ui.getValidInput(msg, dtype=int, valid=range(1, num_models + 2)) - 1
 
             if (index != backIndex - 1):
                 return os.path.join(self.paths["models"], models[index])
-
         return None
-        
-    def _runNew(self) -> None:
-        game = self.getROM();
-        print(game)
-        session_name = input("Name for session: ")
-        num_episodes = input("Number of training episodes: ")
-        session_path = os.path.join(self.paths["models"], session_name)
-        os.mkdir(session_path)
-        train.run(game = game,
-                  training_mode = True,
-                  pretrained = False,
-                  num_episodes = int(num_episodes),
-                  save_path = session_path)
 
     def importROMs(self) -> None:
         """
@@ -134,10 +156,10 @@ class Driver:
                     if hash in known_hashes:
                         game, _, _ = known_hashes[hash]
                         games.append(game)
-                        msg += "\n\t" + str(i) + ") " + game
+                        msg += "\n    " + str(i) + ") " + game
                 #msg += "\n\t" + str(i) + ") " + str(rom)
             backIndex = num_games + 1
-            msg += "\n\t" + str(backIndex) + ") Back"
+            msg += "\n    " + str(backIndex) + ") Back"
             index = ui.getValidInput(msg, dtype=int, valid=range(1, num_games + 2)) - 1
 
             if (index != backIndex - 1):

@@ -1,4 +1,4 @@
-from core.deepQ.solver import DQNSolver
+from core.training.solver import DQNSolver
 import torch 
 import torch.nn as nn
 import pickle
