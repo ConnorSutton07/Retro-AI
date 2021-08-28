@@ -1,7 +1,12 @@
 import gym
+import retro
 import numpy as np 
 import cv2
 import collections 
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.utils import set_random_seed
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.monitor import Monitor
 
 class MaxAndSkipEnv(gym.Wrapper):
     def __init__(self, env=None, skip=4):
@@ -36,7 +41,6 @@ class ProcessFrame84(gym.ObservationWrapper):
     Downsamples image to 84x84
     Greyscales image
 
-    Returns numpy array
     """
     def __init__(self, env=None):
         super(ProcessFrame84, self).__init__(env)
@@ -62,8 +66,8 @@ class ImageToPyTorch(gym.ObservationWrapper):
     def __init__(self, env):
         super(ImageToPyTorch, self).__init__(env)
         old_shape = self.observation_space.shape
-        self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=(old_shape[-1], old_shape[0], old_shape[1]),
-                                                dtype=np.float32)
+        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(old_shape[-1], old_shape[0], old_shape[1]),
+                                                dtype=np.uint8)
 
     def observation(self, observation):
         return np.moveaxis(observation, 2, 0)
@@ -76,7 +80,7 @@ class ScaledFloatFrame(gym.ObservationWrapper):
 
 
 class BufferWrapper(gym.ObservationWrapper):
-    def __init__(self, env, n_steps, dtype=np.float32):
+    def __init__(self, env, n_steps, dtype=np.uint8):
         super(BufferWrapper, self).__init__(env)
         self.dtype = dtype
         old_space = env.observation_space
@@ -96,6 +100,7 @@ class SNESDiscretizer(gym.ActionWrapper):
     """
     Wrap a gym-retro environment and make it use discrete
     actions for any SNES game.
+
     """
     def __init__(self, env):
         super(SNESDiscretizer, self).__init__(env)
@@ -104,8 +109,7 @@ class SNESDiscretizer(gym.ActionWrapper):
         buttons = ["B", "Y", "SELECT", "START", "UP", "DOWN", "LEFT", "RIGHT", "A", "X", "L", "R"]
         actions = [['Y'], ['UP'], ['RIGHT'], ['DOWN'], ['A'], ["B"],
                    ["B", "RIGHT"], ["B", "UP"], ['Y', 'LEFT'], ['Y', 'RIGHT'], ['Y', 'B'],
-                   ['Y', 'B', 'LEFT'], ['Y', 'B', 'RIGHT']
-                   ] 
+                   ['Y', 'B', 'LEFT'], ['Y', 'B', 'RIGHT']] 
         self._actions = []
         for action in actions:
             arr = np.array([False] * self.num_buttons)
@@ -120,11 +124,37 @@ class SNESDiscretizer(gym.ActionWrapper):
     def action(self, a): # pylint: disable=W0221
         return self._actions[a].copy()
 
-def make_env(env):
+def wrap_env(env):
     env = MaxAndSkipEnv(env)
     env = ProcessFrame84(env)
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, 4)
-    env = ScaledFloatFrame(env)
+    env = Monitor(env)
+    #env = ScaledFloatFrame(env)
     env = SNESDiscretizer(env)
     return env
+
+def make_env(game: str):
+    env = retro.make(game)
+    env = wrap_env(env)
+    return env
+
+def init_env(game: str, rank: int, seed: int = 0) -> callable:
+    """
+    Utility function for multiprocessed env.
+    
+    """
+    def _init() -> gym.Env:
+        env = retro.make(game)
+        env = wrap_env(env)
+        env.seed(seed + rank)
+        return env
+    set_random_seed(seed)
+    return _init
+
+def make_envs(game: str, num_cpus: int = 4) -> gym.Env:
+    # Create the vectorized environment
+    env = SubprocVecEnv([init_env(game, i) for i in range(num_cpus)])
+    return env
+
+

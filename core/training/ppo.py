@@ -10,7 +10,7 @@ class PPOAgent(PPO):
     def __init__(self,
                  env:           Gym.Env,
                  save_path:     str,
-                 policy:        str = 'MlpPolicy',
+                 policy:        str = 'CnnPolicy',
                  gamma:         float = 0.99,
                  n_steps:       int   = 2048,
                  ent_coef:      float = 0.01,
