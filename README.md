@@ -21,4 +21,4 @@ Clone this repo and setup a Python 3.7 environment--other versions of Python may
 
 
 ### Step 2
-run ''' pip install -e requirements.txt '''
+run ``` pip install -e requirements.txt ```
