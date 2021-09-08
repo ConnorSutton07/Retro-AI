@@ -14,14 +14,14 @@
 
 ## Setup
 
-###  1
+### Step 1
 Clone this repo and setup a Python 3.7 environment--other versions of Python may work but are untested.
 
 
-###  2
+### Step 2
 run ``` pip install -e requirements.txt ```
 
-###  3 
+### Step 3 
 Gym-Retro comes with a 'scenario.json' and 'data.json' file for each of the hundreds of games for which in an interface is setup. The data files create variables to track game elements such as the player's x/y position, score, number of lives, etc. The scenario file allows you to specify how the agent will be rewarded or when an episode should terminate based on the variables from the data file. These will often be lacking in content, however. For example, the default scenario.json file for Donkey Kong does not contain a variable to track the player's x position, which is essential for a decent reward function. Using Retro's Game Integration Tool, these can be added manually.
 
 Open the 'Data' folder, and copy all the contained folders. Navigate to 'Lib\site-packages\retro\data\stable', and paste these folders to overwrite the default files with the updated versions.
