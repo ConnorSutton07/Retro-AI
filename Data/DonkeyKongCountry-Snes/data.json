@@ -1,0 +1,17 @@
+{
+  "info": {
+    "xpos": {
+      "address": 8263755,
+      "type": "<u2"
+    },
+    "lives": {
+      "address": 8258933,
+      "type": "|i1"
+    },
+    "score": {
+      "address": 8258857,
+      "type": "|u1"
+    }
+  }
+  }
+}
