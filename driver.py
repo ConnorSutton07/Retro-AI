@@ -12,7 +12,7 @@ class Driver:
         self.paths["current"] = os.getcwd()
         self.paths["models"] = os.path.join(self.paths["current"], "models")
         self.paths["ROMs"] = os.path.join(self.paths["current"], "ROMs")
-        self.algorithms = ["DQN", "PPO"]        
+        self.algorithms = ["DQN"]#, "PPO"]        
 
         print()
         print("     +" + "-"*8 + "+")

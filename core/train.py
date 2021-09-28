@@ -25,15 +25,23 @@ def run(training_mode: bool,
         ) -> None:
 
     print("Creating environment...")
-    if pretrained:
-        env = make_env(game)
-        PPO_Evaluation(load_path, env)
-    elif alg == "DQN":
-        env = make_env(game)
-        DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
-    elif alg == "PPO":
-        env = make_envs(game)
-        PPO_Training(num_episodes, save_path, env)
+    #if training_mode:
+    env = make_env(game)
+    DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
+    #else:
+    #    env = make_env(game)
+    #    DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
+
+
+    # if pretrained:
+    #     env = make_env(game)
+    #     DQN_Training(load_path, env)
+    # elif alg == "DQN":
+    #     env = make_env(game)
+    #     DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
+    # elif alg == "PPO":
+    #     env = make_envs(game)
+    #     PPO_Training(num_episodes, save_path, env)
 
 def PPO_Training(num_episodes: int,
                  save_path:    str,
@@ -112,8 +120,8 @@ def DQN_Training(num_episodes:  int,
         prev_reward = 0
         prev_info = None
         while not terminal:
-            #if not training_mode:
-            env.render()
+            if not training_mode:
+                env.render()
 
             action = agent.act(state)
             steps += 1

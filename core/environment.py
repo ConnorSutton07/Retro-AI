@@ -130,7 +130,7 @@ def wrap_env(env):
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, 4)
     env = Monitor(env)
-    #env = ScaledFloatFrame(env)
+    env = ScaledFloatFrame(env)
     env = SNESDiscretizer(env)
     return env
 
