@@ -124,19 +124,19 @@ class SNESDiscretizer(gym.ActionWrapper):
     def action(self, a): # pylint: disable=W0221
         return self._actions[a].copy()
 
-def wrap_env(env):
+def wrap_env(env, skip_frames):
     env = MaxAndSkipEnv(env)
     env = ProcessFrame84(env)
     env = ImageToPyTorch(env)
     env = BufferWrapper(env, 4)
     env = Monitor(env)
-    env = ScaledFloatFrame(env)
+    if skip_frames: env = ScaledFloatFrame(env)
     env = SNESDiscretizer(env)
     return env
 
-def make_env(game: str):
+def make_env(game: str, skip_frames: bool = False):
     env = retro.make(game)
-    env = wrap_env(env)
+    env = wrap_env(env, skip_frames)
     return env
 
 def init_env(game: str, rank: int, seed: int = 0) -> callable:

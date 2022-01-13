@@ -5,13 +5,13 @@ import os
 import json
 
 def getValidInput(
-				  msg: str,
-				  dtype: any = str,
-				  lower: float = None, upper: float = None,
-				  valid: set = None,
-				  isValid: callable = None,
-				  end=None
-				  ) -> any:
+		msg: str,
+		dtype: any = str,
+		lower: float = None, upper: float = None,
+		valid: set = None,
+		isValid: callable = None,
+		end=None
+	) -> any:
 	"""
 	Gets input from user constrained by parameters.
 	Parameters

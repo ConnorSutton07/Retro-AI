@@ -25,23 +25,9 @@ def run(training_mode: bool,
         ) -> None:
 
     print("Creating environment...")
-    #if training_mode:
-    env = make_env(game)
+
+    env = make_env(game, training_mode)
     DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
-    #else:
-    #    env = make_env(game)
-    #    DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
-
-
-    # if pretrained:
-    #     env = make_env(game)
-    #     DQN_Training(load_path, env)
-    # elif alg == "DQN":
-    #     env = make_env(game)
-    #     DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
-    # elif alg == "PPO":
-    #     env = make_envs(game)
-    #     PPO_Training(num_episodes, save_path, env)
 
 def PPO_Training(num_episodes: int,
                  save_path:    str,
@@ -122,6 +108,8 @@ def DQN_Training(num_episodes:  int,
         while not terminal:
             if not training_mode:
                 env.render()
+                audio = env.em.get_audio()
+                print(audio)
 
             action = agent.act(state)
             steps += 1
