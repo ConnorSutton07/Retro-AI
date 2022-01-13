@@ -126,37 +126,34 @@ def DQN_Training(num_episodes:  int,
         while not terminal:
             if not training_mode:
                 env.render()
-
+                try:
+                    audio = env.em.get_audio()
+                    thread = Thread(target = play_audio, args=(audio,))
+                    thread.start()
+                except: pass
             action = agent.act(state)
             steps += 1
             state_next, reward, terminal, info = env.step(int(action[0]))
             #reward, terminal = reward_function(info, prev_info)
             total_reward += reward
-
             counter = counter + 1 if prev_reward >= total_reward else 0
             if counter > 200:
                 terminal = True
-
             state_next = torch.Tensor([state_next])
             reward = torch.tensor([reward]).unsqueeze(0)
             terminal_t = torch.tensor([int(terminal)]).unsqueeze(0)
-
             if training_mode:
                 agent.remember(state, action, reward, state_next, terminal_t)
                 agent.experience_replay()
-
             prev_reward = total_reward
             state = state_next
             prev_info = info.copy()
-
             if keyboard.is_pressed('esc'):
                 print("Exiting...")
                 force_quit = True
                 iterator.close()
                 sys.exit()
                 break
-
-            
         total_rewards.append(total_reward)
         print("Total reward after episode {} is {}".format(ep_num + 1, total_rewards[-1]))
         num_episodes += 1      
