@@ -9,15 +9,25 @@ from tqdm import tqdm
 import torch
 import matplotlib.pyplot as plt
 import simpleaudio as sa
+import time
 import pickle
 import numpy as np
 import retro
 import cv2
 import keyboard
+import threading
 import sys
 
-def play_audio(audio):
-    sa.play_buffer(audio, 1, 2, 32000) # SNES audio is 16-bit 32KHz 
+def play_audio(audio: np.array):
+    # print(audio.dtype)
+    # print(audio.shape)
+    # audio *= 32767 / np.max(np.abs(audio)) # normalize audio
+    # audio = audio.astype(np.int16) # convert to proper data type
+    # print(audio.shape)
+    print('5')
+    if audio.tolist() != []:
+        sa.play_buffer(audio, 1, 2, 32000) # SNES audio is 16-bit 32KHz 
+    print('6')
 
 def run(training_mode: bool, 
         pretrained:    bool,
@@ -112,9 +122,17 @@ def DQN_Training(num_episodes:  int,
         while not terminal:
             if not training_mode:
                 env.render()
-                audio = env.em.get_audio()
-                print(audio)
-
+                #time.sleep(1.0/60.0)
+                try:
+                    print('1')
+                    audio = env.em.get_audio()
+                    print('2')
+                    thread = threading.Thread(target = play_audio, args=(audio,))
+                    thread.start()
+                    print('4')
+                except: 
+                    print("fail")
+                    pass            
             action = agent.act(state)
             steps += 1
             state_next, reward, terminal, info = env.step(int(action[0]))
