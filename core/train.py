@@ -8,12 +8,16 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from tqdm import tqdm
 import torch
 import matplotlib.pyplot as plt
+import simpleaudio as sa 
 import pickle
 import numpy as np
 import retro
 import cv2
 import keyboard
 import sys
+
+def play_audio(audio):
+    sa.play_buffer(audio, 1, 2, 32000) # SNES audio is 16-bit 32KHz 
 
 def run(training_mode: bool, 
         pretrained:    bool,
