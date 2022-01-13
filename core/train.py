@@ -29,9 +29,10 @@ def run(training_mode: bool,
         ) -> None:
 
     print("Creating environment...")
-    #if training_mode:
     env = make_env(game)
     DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
+
+
     #else:
     #    env = make_env(game)
     #    DQN_Training(num_episodes, save_path, load_path, env, pretrained, training_mode)
@@ -106,7 +107,8 @@ def DQN_Training(num_episodes:  int,
         exploration_decay = EXPLORATION_DECAY,
         double_dq = True,
         load_path = load_path,
-        save_path = save_path)
+        save_path = save_path
+    )
 
     env.reset()
     total_rewards = []
