@@ -1,4 +1,7 @@
 # Retro-AI
+
+This project provides an framework for implementing and testing Deep Reinforcement Learning algorithms in Super Nintendo games. It is ideal for beginners trying to build up an intuition as to the mechanics of Deep RL or for experts that want to test new algorithms or experiment with transfer learning. 
+
 ![small_mario](https://user-images.githubusercontent.com/55513603/120692158-020fc780-c46d-11eb-8205-cd834f1ece4e.png)
 ![small_dk](https://user-images.githubusercontent.com/55513603/120692160-020fc780-c46d-11eb-9d0f-64845703097b.png)
 
@@ -15,7 +18,7 @@
 ## Setup
 
 ### Step 1
-Clone this repo and setup a Python 3.7 environment--other versions of Python may work but are untested.
+Clone this repo and setup a Python 3.7 environment--other versions of Python *will not work*.
 
 
 ### Step 2
